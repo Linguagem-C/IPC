@@ -1,9 +1,8 @@
 #include <string.h>
+#include <unistd.h>
 
 #define TRUE 1
 #define FALSE 0
-
-int trava = FALSE;
 
 // Remover quebra de linha do fgets
 void remove_line_break(char *string) {

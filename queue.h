@@ -30,6 +30,8 @@ void get_queue(int *queue, key_t key, int permissions) {
     perror("msgget");
     exit(1);
   }
+
+  printf("Fila de mensagem de ID = %d\n", *queue);
 }
 
 void destroy_queue(int *queue) {

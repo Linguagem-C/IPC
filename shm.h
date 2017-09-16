@@ -2,15 +2,13 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 
-
-int get_shared_memory(key_t key, int permissions) {
+int get_shared_memory(key_t key, struct msgbuffer buffer, int permissions) {
   int segment_id;                         // Identificador do segmento
-  const int shared_segment_size = 0x6400; // Número de bytes do segmento
 
   // Aloca o segmento de memória compartilhada (shm=shared memory get)
   // key cria a chave que especifica o segmento a ser criado,
   // outros processos para acessar essa memoria compartilhada precisa dessa chave.
-  if ((segment_id = shmget(key, shared_segment_size, permissions)) < 0) {
+  if ((segment_id = shmget(key, sizeof(buffer), permissions)) < 0) {
     perror("shmget");
     exit(1);
   }
@@ -20,12 +18,12 @@ int get_shared_memory(key_t key, int permissions) {
 }
 
 
-char *attach_shared_memory(int *segment_id, const void *address) {
-  char *shared_memory; // Endereço da memória compartilhada
+struct msgbuffer *attach_shared_memory(int *segment_id, const void *address) {
+  struct msgbuffer *shared_memory;
 
   // Deixar a memória compartilhada acessível (shmat = shared memory attach)
   // Filhos criados com fork herdam segmentos de memoria compartilhada anexados(attached)
-  if((shared_memory = (char*) shmat(*segment_id, address, 0)) == (char*) -1) {
+  if((shared_memory = (struct msgbuffer*) shmat(*segment_id, address, 0)) == (struct msgbuffer*) -1) {
     perror("shmat");
     exit(1);
   }
@@ -35,7 +33,7 @@ char *attach_shared_memory(int *segment_id, const void *address) {
 }
 
 
-void detach_shared_memory(char *shared_memory) {
+void detach_shared_memory(struct msgbuffer *shared_memory) {
   // Quando você terminar de usar um segmento de memória compartilhada,
   // o segmento deve ser separado (detached - não acessivel) usando
   // shmdt (shared memory detach) e passando seu endereço.
